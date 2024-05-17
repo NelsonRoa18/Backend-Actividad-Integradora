@@ -11,8 +11,9 @@ btnSend.addEventListener('click', () => {
     const thumbnail = document.getElementById('thumbnail').value;
     const code = document.getElementById('code').value;
     const stock = document.getElementById('stock').value;
-    const status = document.getElementById('status');
-    status.checked = true;
+    const statusChecked = document.getElementById('status');
+    const status = statusChecked.checked;
+
     socket.emit('addProduct', { title, description, price,thumbnail, code, stock, status});
 
 })
