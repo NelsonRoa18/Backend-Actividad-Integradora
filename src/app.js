@@ -35,16 +35,16 @@ app.use(express.urlencoded({ extended: true }))
 app.engine('handlebars', handlebars.engine());
 
 //Indicamos en que parte estaran las vistas
-app.set('views', __dirname+'/views')
+app.set('views', __dirname + '/views')
 
 //Indicamos que motor de plantillas se usara, 'view engine', 'handlebars'
 app.set('view engine', 'handlebars')
 
 //Seteamos de manera estatica nuestra carpeta
-app.use(express.static(__dirname+'/public'))
+app.use(express.static(__dirname + '/public'))
 
 mongoose.connect(process.env.MONGO_URL)
-    .then(() => {console.log("Conectado a la base de datos") })
+    .then(() => { console.log("Conectado a la base de datos") })
     .catch(error => (console.error("Error en la conexion", error)))
 
 app.use('/realTimeProducts', viewsRouter)
@@ -52,58 +52,84 @@ app.use('/', productsRouter)
 app.use('/chats', messagesRouter)
 app.use('/update', updateRouter)
 
+let idProductToUpdate = ""
 
 socketServer.on('connection', socket => {
     console.log("Nuevo cliente conectado");
 
 
     messageManager.getChats()
-    .then(chats => {
-        socketServer.emit('mensaje', chats)
-    })
+        .then(chats => {
+            socketServer.emit('mensaje', chats)
+        })
 
     socket.on('addMensaje', data => {
         console.log(data);
         messageManager.addMessage(data)
-        .then(()=>{
-            messageManager.getChats()
-            .then(chats => {
-                socketServer.emit('mensaje', chats)
+            .then(() => {
+                messageManager.getChats()
+                    .then(chats => {
+                        socketServer.emit('mensaje', chats)
+                    })
             })
-        }) 
     })
 
     productManager.getProducts()
-    .then(products => {
+        .then(products => {
 
-        socketServer.emit('products', products)
-        socketServer.emit('productsRealTime', products)
-    })
+            socketServer.emit('products', products)
+            socketServer.emit('productsRealTime', products)
+        })
 
-    socket.on('addProduct', (data)=> {
+
+    socket.on('addProduct', (data) => {
         console.log("Recibiendo producto agregado");
         productManager.addProduct(data)
-        .then(() => {
-            console.log("Solicitando mostrar productos");
-            productManager.getProducts()
-            .then(products => {
-                socketServer.emit('productsRealTime', products)
+            .then(() => {
+                console.log("Solicitando mostrar productos");
+                productManager.getProducts()
+                    .then(products => {
+                        socketServer.emit('productsRealTime', products)
+                    })
             })
-        })
 
     })
 
 
     socket.on('deleteProduct', (data) => {
         productManager.deleteProduct(data)
-        .then(() => {
+            .then(() => {
+                productManager.getProducts()
+                    .then((products) => {
+                        socketServer.emit('productsRealTime', products)
+                    })
+            })
+    })
+
+    socket.on('updateProductPage', (dataPage) => {
+        socketServer.emit('redirect', dataPage)
+        idProductToUpdate = dataPage.id
+    })
+
+    socket.on('realTimeProducts', (dataPage) => {
+        socketServer.emit('redirect', dataPage)
+    })
+
+    socket.on('updateProduct', (data) => {
+        productManager.updateProduct(idProductToUpdate, data)
+        .then(()=> {
             productManager.getProducts()
-            .then((products) =>{
+            .then((products) => {
                 socketServer.emit('productsRealTime', products)
             })
         })
     })
-  
+
 
 
 })
+
+
+
+
+

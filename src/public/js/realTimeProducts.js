@@ -24,7 +24,7 @@ socket.on('productsRealTime', products => {
     products.forEach(product => {
   
         const newProduct = document.createElement('li');
-        //const btnUpdate = document.createElement('button')
+        const btnUpdate = document.createElement('button')
         const btnDelete = document.createElement('button');
 
         btnDelete.innerHTML = 'Eliminar';
@@ -32,25 +32,27 @@ socket.on('productsRealTime', products => {
             socket.emit('deleteProduct', product._id)
             console.log(product._id);
         });
-/*         btnUpdate.innerHTML = "Modificar";
+
+        btnUpdate.innerHTML = "Modificar";
         btnUpdate.addEventListener('click',() => {
-            socket.emit('idProductToUpdate', product.id)
-            console.log(product.id);
-            socket.emit('updateProductPage', {url:'/update'})
+
+            console.log(product._id);
+            socket.emit('updateProductPage', {url:'/update', id: product._id})
             
-        }); */
+        });
         newProduct.innerHTML = `<strong>Title: </strong>${product.title}, <strong>Description: </strong>${product.description},
         <strong>Price: </strong>${product.price}, <strong>Code: </strong>${product.code},
         `;
         listProducts.appendChild(newProduct);
         listProducts.appendChild(btnDelete);
-        //listProducts.appendChild(btnUpdate)
+        listProducts.appendChild(btnUpdate)
     });
 })
 
 socket.on('redirect', (data) => {
-    console.log(data.id);
+    console.log(data);
+    socket.emit('idProduct', data.id)
     window.location.href = data.url;
-    
+
 
 }) 
