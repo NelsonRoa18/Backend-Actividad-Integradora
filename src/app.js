@@ -7,12 +7,13 @@ import productsRouter from './routes/products.router.js'
 import messagesRouter from './routes/message.router.js'
 import updateRouter from './routes/update.router.js'
 import { Server } from 'socket.io'
-import { promises as fs } from 'fs';
+
 import ProductManager from './class/ProductManager.js'
 import dotenv from 'dotenv';
 import MessageManager from './class/ChatManager.js'
 
 dotenv.config()
+
 console.log(process.env.MONGO_URL);
 
 
